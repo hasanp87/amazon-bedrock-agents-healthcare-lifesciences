@@ -1,0 +1,113 @@
+{
+  "id": "SOP-CARD-001",
+  "title": "Cardiac ICU Patient Admission Protocol",
+  "description": "Standard procedure for admitting patients to the Cardiac Intensive Care Unit",
+  "category": "clinical",
+  "priority": "high",
+  "applicable_departments": ["cardiology", "icu", "emergency"],
+  "applicable_roles": ["physician", "nurse"],
+  "keywords": ["admission", "cardiac", "icu", "patient", "critical care"],
+  "prerequisites": [
+    "Physician order for ICU admission",
+    "ICU bed availability confirmed",
+    "Patient consent obtained"
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "description": "Verify physician orders and patient identification",
+      "details": "Review admission orders, confirm patient identity using two identifiers (name and DOB), verify diagnosis and reason for ICU admission",
+      "required": true,
+      "estimated_time": "5 minutes",
+      "validation_criteria": [
+        "Patient identity confirmed with two identifiers",
+        "Admission orders signed by attending physician",
+        "Diagnosis documented in chart"
+      ],
+      "warnings": [
+        "Do not proceed without proper identification verification"
+      ]
+    },
+    {
+      "step_number": 2,
+      "description": "Perform initial patient assessment",
+      "details": "Complete comprehensive nursing assessment including vital signs, cardiac monitoring setup, and assessment of consciousness level using Glasgow Coma Scale",
+      "required": true,
+      "estimated_time": "15 minutes",
+      "validation_criteria": [
+        "All vital signs documented",
+        "Cardiac monitoring active and alarms set",
+        "GCS score documented"
+      ],
+      "warnings": [
+        "Alert physician immediately if vital signs are unstable",
+        "Ensure continuous cardiac monitoring"
+      ]
+    },
+    {
+      "step_number": 3,
+      "description": "Establish IV access and begin monitoring",
+      "details": "Establish or verify adequate IV access (minimum 18G for cardiac patients), connect to cardiac monitor, set appropriate alarm parameters",
+      "required": true,
+      "estimated_time": "10 minutes",
+      "validation_criteria": [
+        "IV access patent and secure",
+        "Cardiac monitor displaying rhythm",
+        "Alarm parameters set according to patient condition"
+      ]
+    },
+    {
+      "step_number": 4,
+      "description": "Review and initiate ordered medications",
+      "details": "Review medication orders, verify allergies, administer time-sensitive cardiac medications as ordered",
+      "required": true,
+      "estimated_time": "15 minutes",
+      "validation_criteria": [
+        "All medications verified against orders",
+        "Allergy check completed",
+        "Time-sensitive medications administered"
+      ],
+      "warnings": [
+        "Double-check cardiac medication doses",
+        "Verify no contraindications"
+      ]
+    },
+    {
+      "step_number": 5,
+      "description": "Complete admission documentation",
+      "details": "Document all admission activities, complete required forms, update patient status in electronic health record",
+      "required": true,
+      "estimated_time": "10 minutes",
+      "validation_criteria": [
+        "All admission forms completed",
+        "Documentation in EHR current",
+        "Family contact information updated"
+      ]
+    },
+    {
+      "step_number": 6,
+      "description": "Communicate with family and care team",
+      "details": "Update family on admission status and patient condition, notify care team members of admission",
+      "required": true,
+      "estimated_time": "10 minutes",
+      "validation_criteria": [
+        "Family notified and updated",
+        "Care team communication documented"
+      ]
+    }
+  ],
+  "related_sops": ["SOP-CARD-002", "SOP-ICU-001"],
+  "references": [
+    "American Heart Association ICU Guidelines 2024",
+    "Hospital ICU Admission Policy"
+  ],
+  "metadata": {
+    "version": "2.1",
+    "created_date": "2024-01-15",
+    "last_updated": "2024-12-01",
+    "author": "Dr. Sarah Johnson, Cardiology Department",
+    "reviewer": "Dr. Michael Chen, ICU Director",
+    "approval_status": "approved",
+    "review_frequency": "annual"
+  }
+}

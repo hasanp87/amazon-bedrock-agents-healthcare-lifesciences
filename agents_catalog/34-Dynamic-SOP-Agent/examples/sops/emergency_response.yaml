@@ -1,0 +1,127 @@
+id: SOP-EMRG-001
+title: Emergency Code Blue Response
+description: Rapid response protocol for cardiac arrest situations
+category: safety
+priority: critical
+applicable_departments:
+  - emergency
+  - icu
+  - cardiology
+  - all clinical areas
+applicable_roles:
+  - physician
+  - nurse
+  - technician
+keywords:
+  - emergency
+  - code blue
+  - cardiac arrest
+  - cpr
+  - resuscitation
+  - critical
+prerequisites:
+  - Code blue team paged
+  - Crash cart available
+  - Defibrillator charged and ready
+related_sops:
+  - SOP-EMRG-002
+  - SOP-CARD-003
+references:
+  - AHA ACLS Guidelines 2023
+  - Hospital Emergency Response Manual
+steps:
+  - step_number: 1
+    description: Initiate emergency response system
+    details: Call code blue overhead, note exact time, assign roles to responders (team leader, airway manager, chest compressions, medications, documentation)
+    required: true
+    validation_criteria:
+      - Code blue announced with location
+      - Start time documented
+      - Roles assigned to team members
+    estimated_time: 1 minute
+    warnings:
+      - Every second counts
+      - Ensure someone is documenting from the start
+  - step_number: 2
+    description: Begin high-quality CPR immediately
+    details: Position patient on firm surface. Start chest compressions at rate of 100-120/min, depth 2-2.4 inches. Minimize interruptions.
+    required: true
+    validation_criteria:
+      - Compressions started within 10 seconds
+      - Proper hand placement and depth
+      - Rate maintained at 100-120/min
+    estimated_time: Continuous
+    warnings:
+      - Do not delay compressions for any reason
+      - Switch compressors every 2 minutes to prevent fatigue
+  - step_number: 3
+    description: Establish airway and breathing support
+    details: Apply bag-valve-mask with 100% oxygen. Prepare for advanced airway if needed. Ensure proper chest rise with ventilations.
+    required: true
+    validation_criteria:
+      - Oxygen delivery confirmed
+      - Chest rise visible with ventilations
+      - End-tidal CO2 monitoring if available
+    estimated_time: 2 minutes
+    warnings:
+      - Avoid hyperventilation
+      - Confirm airway placement if intubating
+  - step_number: 4
+    description: Attach defibrillator and analyze rhythm
+    details: Apply defibrillator pads, analyze rhythm. If shockable (VF/VT), prepare to defibrillate. Continue CPR during preparation.
+    required: true
+    validation_criteria:
+      - Pads properly placed
+      - Rhythm identified
+      - Shock delivered if indicated
+    estimated_time: 30 seconds
+    warnings:
+      - Ensure all personnel clear before shocking
+      - Minimize pause in compressions
+  - step_number: 5
+    description: Administer ACLS medications per protocol
+    details: Establish IV/IO access. Administer epinephrine 1mg every 3-5 minutes. Consider antiarrhythmics if indicated.
+    required: true
+    validation_criteria:
+      - IV/IO access established
+      - Medications given at correct intervals
+      - All medications documented with time
+    estimated_time: Ongoing
+    warnings:
+      - Verify medication and dose before administration
+      - Document all medications with exact times
+  - step_number: 6
+    description: Identify and treat reversible causes
+    details: Consider H's and T's (Hypovolemia, Hypoxia, H+ (acidosis), Hypo/hyperkalemia, Hypothermia, Tension pneumothorax, Tamponade, Toxins, Thrombosis)
+    required: true
+    validation_criteria:
+      - Point of care testing performed
+      - Bedside ultrasound if available
+      - Specific treatments initiated
+    estimated_time: Ongoing
+  - step_number: 7
+    description: Continue resuscitation or determine termination
+    details: Continue ACLS protocol. Every 2 minutes, briefly pause to check rhythm and pulse. Consider prognosis and appropriateness of continuing.
+    required: true
+    validation_criteria:
+      - Rhythm checks every 2 minutes
+      - Team leader regularly assesses situation
+      - Family communication maintained
+    estimated_time: Variable
+  - step_number: 8
+    description: Post-resuscitation care or pronouncement
+    details: If ROSC achieved, initiate post-cardiac arrest care bundle. If terminating resuscitation, document time, notify family, complete death certificate.
+    required: true
+    validation_criteria:
+      - Complete documentation of event
+      - Family notified appropriately
+      - Post-event debriefing scheduled
+    estimated_time: 30 minutes
+metadata:
+  version: "3.0"
+  created_date: "2022-06-01"
+  last_updated: "2024-12-01"
+  author: "Emergency Department Medical Director"
+  reviewer: "Chief Medical Officer"
+  approval_status: "approved"
+  review_frequency: "annual"

@@ -1,0 +1,193 @@
+{
+  "id": "SOP-PHARM-001",
+  "title": "Safe Medication Administration Protocol",
+  "description": "Standard procedure for safe administration of medications following the 5 Rights",
+  "category": "clinical",
+  "priority": "high",
+  "applicable_departments": ["pharmacy", "nursing", "all clinical"],
+  "applicable_roles": ["nurse", "physician", "pharmacist"],
+  "keywords": ["medication", "administration", "safety", "five rights", "drug"],
+  "prerequisites": [
+    "Valid medication order",
+    "Medication available and verified",
+    "Patient consent obtained"
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "description": "Verify Right Patient",
+      "details": "Use two patient identifiers: full name and date of birth. Ask patient to state their name. Compare with wristband and medication administration record.",
+      "required": true,
+      "estimated_time": "2 minutes",
+      "validation_criteria": [
+        "Two identifiers verified",
+        "Patient confirmed identity verbally",
+        "Wristband matches MAR"
+      ],
+      "warnings": [
+        "Never assume patient identity",
+        "Always use two identifiers"
+      ]
+    },
+    {
+      "step_number": 2,
+      "description": "Verify Right Medication",
+      "details": "Check medication label against MAR three times: when removing from storage, when preparing, and at bedside before administration.",
+      "required": true,
+      "estimated_time": "2 minutes",
+      "validation_criteria": [
+        "Medication name matches order",
+        "Medication is in date",
+        "No signs of contamination or tampering"
+      ],
+      "warnings": [
+        "Look-alike/sound-alike medications require extra caution",
+        "Verify generic and brand names"
+      ]
+    },
+    {
+      "step_number": 3,
+      "description": "Verify Right Dose",
+      "details": "Verify the dose against the order. Calculate dose if needed and have second nurse verify high-risk medications. Use standardized concentration when available.",
+      "required": true,
+      "estimated_time": "3 minutes",
+      "validation_criteria": [
+        "Dose matches order exactly",
+        "Calculation verified if applicable",
+        "Appropriate measuring device used"
+      ],
+      "warnings": [
+        "High-risk medications require double-check",
+        "Verify decimal point placement"
+      ]
+    },
+    {
+      "step_number": 4,
+      "description": "Verify Right Route",
+      "details": "Confirm the route of administration matches the order. Ensure the medication is appropriate for the specified route.",
+      "required": true,
+      "estimated_time": "1 minute",
+      "validation_criteria": [
+        "Route matches order",
+        "Medication formulation appropriate for route",
+        "Access site verified (IV, PO, IM, etc.)"
+      ],
+      "warnings": [
+        "Never substitute routes without physician order",
+        "Some medications cannot be given by certain routes"
+      ]
+    },
+    {
+      "step_number": 5,
+      "description": "Verify Right Time",
+      "details": "Administer medication within the facility-approved time window (typically 30-60 minutes of scheduled time). Verify frequency is appropriate.",
+      "required": true,
+      "estimated_time": "1 minute",
+      "validation_criteria": [
+        "Within acceptable time window",
+        "Previous dose timing verified",
+        "Frequency appropriate"
+      ],
+      "warnings": [
+        "Time-critical medications require strict adherence",
+        "Check for missed doses"
+      ]
+    },
+    {
+      "step_number": 6,
+      "description": "Educate patient and assess",
+      "details": "Explain medication purpose and expected effects. Assess for contraindications, allergies, and vital signs if required. Answer patient questions.",
+      "required": true,
+      "estimated_time": "5 minutes",
+      "validation_criteria": [
+        "Patient educated about medication",
+        "Allergies verified",
+        "Vital signs checked if required",
+        "No contraindications present"
+      ],
+      "warnings": [
+        "Do not administer if patient refuses",
+        "Hold and notify physician if contraindications present"
+      ]
+    },
+    {
+      "step_number": 7,
+      "description": "Administer medication",
+      "details": "Administer medication using appropriate technique for the route. Follow aseptic technique. Stay with patient for oral medications.",
+      "required": true,
+      "estimated_time": "5 minutes",
+      "validation_criteria": [
+        "Proper technique used",
+        "Aseptic technique maintained",
+        "Patient observed taking medication"
+      ],
+      "warnings": [
+        "Do not leave medications at bedside unless ordered",
+        "Dispose of unused portions appropriately"
+      ]
+    },
+    {
+      "step_number": 8,
+      "description": "Document administration",
+      "details": "Document immediately after administration including time, dose, route, site (if applicable), and patient response. Document any refusal or held medications with reason.",
+      "required": true,
+      "estimated_time": "3 minutes",
+      "validation_criteria": [
+        "Documentation completed immediately",
+        "All required fields completed",
+        "Patient response noted"
+      ],
+      "warnings": [
+        "If not documented, not done",
+        "Never document before administration"
+      ]
+    },
+    {
+      "step_number": 9,
+      "description": "Monitor for effects and adverse reactions",
+      "details": "Monitor patient for therapeutic effect and adverse reactions according to medication profile. Document findings. Report concerns immediately.",
+      "required": true,
+      "estimated_time": "15-30 minutes",
+      "validation_criteria": [
+        "Patient monitored per protocol",
+        "Findings documented",
+        "Adverse reactions reported promptly"
+      ],
+      "warnings": [
+        "Know common adverse reactions for medications given",
+        "Have reversal agents available for high-risk medications"
+      ]
+    },
+    {
+      "step_number": 10,
+      "description": "Secure and dispose of materials",
+      "details": "Properly dispose of needles in sharps container, dispose of medication vials/ampules per policy, secure controlled substances.",
+      "required": true,
+      "estimated_time": "2 minutes",
+      "validation_criteria": [
+        "Sharps disposed properly",
+        "Controlled substances wasted per policy",
+        "Medication storage areas secured"
+      ],
+      "warnings": [
+        "Never recap needles",
+        "Controlled substance waste requires witness"
+      ]
+    }
+  ],
+  "related_sops": ["SOP-PHARM-002", "SOP-SAFETY-001"],
+  "references": [
+    "Institute for Safe Medication Practices Guidelines",
+    "Joint Commission Medication Management Standards",
+    "Hospital Medication Administration Policy"
+  ],
+  "metadata": {
+    "version": "2.5",
+    "created_date": "2024-02-01",
+    "last_updated": "2024-12-10",
+    "author": "Margaret Thompson, PharmD",
+    "reviewer": "Jennifer White, RN, MSN",
+    "approval_status": "approved",
+    "review_frequency": "annual"
+  }
+}

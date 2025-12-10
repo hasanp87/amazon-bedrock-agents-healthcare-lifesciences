@@ -1,0 +1,117 @@
+{
+  "id": "SOP-CARD-001",
+  "title": "Cardiac ICU Patient Admission",
+  "description": "Standard procedure for admitting patients to the Cardiac Intensive Care Unit",
+  "category": "clinical",
+  "priority": "high",
+  "applicable_departments": ["cardiology", "emergency", "icu"],
+  "applicable_roles": ["physician", "nurse", "administrator"],
+  "keywords": ["admission", "cardiac", "icu", "patient", "heart", "intensive care"],
+  "prerequisites": [
+    "ICU bed availability confirmed",
+    "Physician admission order obtained",
+    "Patient consent signed"
+  ],
+  "related_sops": ["SOP-CARD-002", "SOP-ICU-001"],
+  "references": [
+    "Cardiac Care Guidelines v3.2",
+    "ICU Admission Protocol Manual"
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "description": "Verify patient identity and admission order",
+      "details": "Check patient wristband, confirm full name, DOB, and MRN. Verify physician admission order in EHR system.",
+      "required": true,
+      "validation_criteria": [
+        "Patient identity confirmed with two identifiers",
+        "Admission order signed by attending physician",
+        "ICU bed assignment confirmed"
+      ],
+      "estimated_time": "5 minutes",
+      "warnings": [
+        "Do not proceed without proper identification",
+        "Ensure all allergies are documented"
+      ]
+    },
+    {
+      "step_number": 2,
+      "description": "Obtain and document baseline vital signs",
+      "details": "Measure blood pressure, heart rate, respiratory rate, temperature, and oxygen saturation. Document in patient chart.",
+      "required": true,
+      "validation_criteria": [
+        "All vital signs within acceptable ranges or documented abnormalities",
+        "Continuous cardiac monitoring initiated"
+      ],
+      "estimated_time": "10 minutes",
+      "warnings": [
+        "Alert physician immediately if vital signs are unstable",
+        "Ensure ECG leads are properly placed"
+      ]
+    },
+    {
+      "step_number": 3,
+      "description": "Review and document current medications",
+      "details": "List all current medications including dosage and frequency. Check for drug interactions and allergies.",
+      "required": true,
+      "validation_criteria": [
+        "Complete medication list documented",
+        "All allergies recorded in system",
+        "Drug interaction check completed"
+      ],
+      "estimated_time": "15 minutes",
+      "warnings": [
+        "Pay special attention to anticoagulants and cardiac medications"
+      ]
+    },
+    {
+      "step_number": 4,
+      "description": "Establish IV access and initiate monitoring",
+      "details": "Insert appropriate IV line (minimum 18G for cardiac patients). Connect to cardiac monitor and pulse oximetry.",
+      "required": true,
+      "validation_criteria": [
+        "IV access established and patent",
+        "Cardiac monitoring active with clear waveforms",
+        "Alarm limits set appropriately"
+      ],
+      "estimated_time": "10 minutes",
+      "warnings": [
+        "Use sterile technique for IV insertion",
+        "Verify alarm settings before leaving bedside"
+      ]
+    },
+    {
+      "step_number": 5,
+      "description": "Complete admission assessment and documentation",
+      "details": "Perform comprehensive nursing assessment including cardiac, respiratory, neurological, and skin assessment. Document in EHR.",
+      "required": true,
+      "validation_criteria": [
+        "All body systems assessed and documented",
+        "Risk assessments completed (fall risk, pressure injury, etc.)",
+        "Patient/family education initiated"
+      ],
+      "estimated_time": "30 minutes"
+    },
+    {
+      "step_number": 6,
+      "description": "Notify care team and complete handoff",
+      "details": "Notify attending physician, charge nurse, and other team members. Complete SBAR handoff communication.",
+      "required": true,
+      "validation_criteria": [
+        "All team members notified",
+        "SBAR handoff completed",
+        "Questions answered and documented"
+      ],
+      "estimated_time": "10 minutes"
+    }
+  ],
+  "metadata": {
+    "version": "2.1",
+    "created_date": "2023-01-15",
+    "last_updated": "2024-11-20",
+    "author": "Dr. Sarah Johnson, Cardiology Department",
+    "reviewer": "ICU Medical Director",
+    "approval_status": "approved",
+    "review_frequency": "annual"
+  }
+}

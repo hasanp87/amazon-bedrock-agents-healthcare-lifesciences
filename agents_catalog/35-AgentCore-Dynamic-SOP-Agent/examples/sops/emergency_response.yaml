@@ -1,0 +1,117 @@
+id: SOP-EMRG-001
+title: Emergency Code Blue Response Protocol
+description: Rapid response protocol for cardiac arrest situations
+category: safety
+priority: critical
+applicable_departments:
+  - emergency
+  - icu
+  - cardiology
+  - all departments
+applicable_roles:
+  - physician
+  - nurse
+  - technician
+keywords:
+  - emergency
+  - code blue
+  - cardiac arrest
+  - resuscitation
+  - critical
+prerequisites:
+  - Code blue cart accessible and stocked
+  - Defibrillator charged and ready
+  - Team members trained in ACLS
+steps:
+  - step_number: 1
+    description: Activate code blue and assess scene safety
+    details: Call code blue overhead, announce location, ensure scene is safe for responders, note exact time
+    required: true
+    estimated_time: 30 seconds
+    validation_criteria:
+      - Code blue announced
+      - Location clearly stated
+      - Time documented
+    warnings:
+      - Ensure scene safety before proceeding
+      - Do not delay calling for help
+  - step_number: 2
+    description: Begin CPR immediately
+    details: Start high-quality chest compressions at 100-120 per minute, depth 2-2.4 inches. Minimize interruptions. Rotate compressors every 2 minutes.
+    required: true
+    estimated_time: Continuous
+    validation_criteria:
+      - Compressions started within 10 seconds
+      - Proper rate and depth maintained
+      - Compressor rotation scheduled
+    warnings:
+      - Do not interrupt CPR except for defibrillation
+      - Ensure full chest recoil between compressions
+  - step_number: 3
+    description: Attach defibrillator and analyze rhythm
+    details: Attach defibrillator pads, analyze rhythm, prepare for shock if indicated (VF/pulseless VT)
+    required: true
+    estimated_time: 10 seconds
+    validation_criteria:
+      - Pads properly placed
+      - Rhythm identified
+      - Shock delivered if indicated
+    warnings:
+      - Clear all personnel before shock delivery
+      - Resume CPR immediately after shock
+  - step_number: 4
+    description: Establish airway and ventilation
+    details: Provide bag-valve-mask ventilation, prepare for advanced airway if needed, confirm placement with capnography
+    required: true
+    estimated_time: 1 minute
+    validation_criteria:
+      - Adequate ventilation achieved
+      - Oxygen saturation monitoring active
+      - Capnography waveform present if intubated
+    warnings:
+      - Avoid hyperventilation
+      - Confirm tube placement before securing
+  - step_number: 5
+    description: Establish IV/IO access and administer medications
+    details: Obtain vascular access, administer epinephrine 1mg every 3-5 minutes, consider antiarrhythmics per protocol
+    required: true
+    estimated_time: 2 minutes
+    validation_criteria:
+      - Vascular access confirmed
+      - Medications administered per ACLS
+      - Doses and times documented
+    warnings:
+      - Verify medication doses before administration
+      - Document all medications and times
+  - step_number: 6
+    description: Identify and treat reversible causes
+    details: Evaluate and treat the H's and T's (Hypovolemia, Hypoxia, Hydrogen ion, Hypo/hyperkalemia, Hypothermia, Tension pneumothorax, Tamponade, Toxins, Thrombosis)
+    required: true
+    estimated_time: Ongoing
+    validation_criteria:
+      - Reversible causes considered
+      - Appropriate treatments initiated
+      - Labs sent as indicated
+  - step_number: 7
+    description: Consider termination or continuation of efforts
+    details: After 20 minutes of ACLS, team leader assesses for ROSC or considers termination. Document decision-making process.
+    required: true
+    estimated_time: Varies
+    validation_criteria:
+      - Team leader assessment documented
+      - Family notification completed
+      - Death note completed if applicable
+related_sops:
+  - SOP-CARD-003
+  - SOP-EMRG-002
+references:
+  - American Heart Association ACLS Guidelines 2024
+  - Hospital Code Blue Policy
+metadata:
+  version: "3.0"
+  created_date: "2024-01-01"
+  last_updated: "2024-11-15"
+  author: "Dr. Robert Martinez, Emergency Medicine"
+  reviewer: "Dr. Lisa Anderson, Critical Care"
+  approval_status: approved
+  review_frequency: quarterly

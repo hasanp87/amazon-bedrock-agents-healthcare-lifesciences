@@ -1,0 +1,85 @@
+{
+  "mcpServers": {
+    "awslabs.git-repo-research-mcp-server": {
+      "command": "uvx",
+      "args": [
+        "awslabs.git-repo-research-mcp-server@latest"
+      ],
+      "env": {
+        "GITHUB_TOKEN": "YOUR_GITHUB_TOKEN",
+        "AWS_PROFILE": "YOUR_AWS_PROFILE",
+        "AWS_REGION": "us-east-1",
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      },
+      "disabled": false,
+      "autoApprove": [],
+      "description": "Access SOPs from Git repositories. Replace GITHUB_TOKEN and AWS_PROFILE with your credentials."
+    },
+    "awslabs.aws-documentation-mcp-server": {
+      "command": "uvx",
+      "args": [
+        "awslabs.aws-documentation-mcp-server@latest"
+      ],
+      "env": {
+        "AWS_DOCUMENTATION_PARTITION": "aws",
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      },
+      "disabled": false,
+      "autoApprove": [],
+      "description": "Access AWS service documentation and best practices as SOPs"
+    },
+    "awslabs.cfn-mcp-server": {
+      "command": "uvx",
+      "args": [
+        "awslabs.cfn-mcp-server@latest"
+      ],
+      "env": {
+        "AWS_PROFILE": "YOUR_AWS_PROFILE"
+      },
+      "disabled": false,
+      "autoApprove": [],
+      "description": "Access AWS CloudFormation templates and deployment procedures"
+    }
+  },
+  "sop_repositories": {
+    "local_examples": {
+      "type": "local",
+      "path": "examples/sops",
+      "description": "Local example SOPs for demonstration",
+      "enabled": true
+    },
+    "hospital_sops_git": {
+      "type": "mcp_git",
+      "repo_url": "https://github.com/your-org/hospital-sops",
+      "sop_path": "procedures",
+      "branch": "main",
+      "description": "Organization's SOPs from Git repository",
+      "enabled": false,
+      "requires_mcp": "awslabs.git-repo-research-mcp-server"
+    },
+    "aws_service_sops": {
+      "type": "mcp_aws_docs",
+      "services": ["bedrock", "healthlake", "comprehendmedical", "transcribemedical"],
+      "description": "AWS healthcare service documentation and best practices",
+      "enabled": false,
+      "requires_mcp": "awslabs.aws-documentation-mcp-server"
+    }
+  },
+  "context_settings": {
+    "default_priority": "medium",
+    "enable_conversation_history": true,
+    "max_history_length": 10,
+    "context_analysis": {
+      "extract_department": true,
+      "extract_role": true,
+      "extract_task_type": true,
+      "extract_keywords": true
+    }
+  },
+  "agent_settings": {
+    "model": "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
+    "max_sop_results": 5,
+    "auto_rank_by_relevance": true,
+    "require_prerequisites_check": true
+  }
+}

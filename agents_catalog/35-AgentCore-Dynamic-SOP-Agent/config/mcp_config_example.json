@@ -1,0 +1,51 @@
+{
+  "mcpServers": {
+    "git-repo-sops": {
+      "command": "uvx",
+      "args": ["awslabs.git-repo-research-mcp-server@latest"],
+      "env": {
+        "GITHUB_TOKEN": "your-github-token-here",
+        "AWS_PROFILE": "your-aws-profile",
+        "AWS_REGION": "us-east-1"
+      },
+      "disabled": false,
+      "description": "Git repository access for SOP files"
+    },
+    "aws-docs-sops": {
+      "command": "uvx",
+      "args": ["awslabs.aws-documentation-mcp-server@latest"],
+      "env": {
+        "AWS_DOCUMENTATION_PARTITION": "aws"
+      },
+      "disabled": false,
+      "description": "AWS documentation for service-related SOPs"
+    }
+  },
+  "sop_repositories": {
+    "hospital_procedures": {
+      "source_type": "mcp_git",
+      "source_url": "https://github.com/yourorg/hospital-sops",
+      "branch": "main",
+      "sop_directory": "procedures",
+      "description": "Hospital standard operating procedures"
+    },
+    "clinical_guidelines": {
+      "source_type": "mcp_git",
+      "source_url": "https://github.com/yourorg/clinical-guidelines",
+      "branch": "approved",
+      "sop_directory": "sops",
+      "description": "Clinical practice guidelines"
+    },
+    "local_examples": {
+      "source_type": "local",
+      "source_url": "./examples/sops",
+      "description": "Local example SOPs"
+    }
+  },
+  "context_settings": {
+    "enable_conversation_memory": true,
+    "default_sop_priority": "medium",
+    "max_sops_in_response": 5,
+    "enable_auto_suggestions": true
+  }
+}
