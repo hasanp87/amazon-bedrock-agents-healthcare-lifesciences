@@ -77,7 +77,13 @@ class ContextAnalyzer:
             
         Returns:
             SOPContext with extracted information
+            
+        Raises:
+            ValueError: If query is empty or None
         """
+        if not query or not query.strip():
+            raise ValueError("Query cannot be empty")
+        
         query_lower = query.lower()
         
         # Extract keywords from query

@@ -1,10 +1,11 @@
 """
 SOP Loader for loading SOPs from various sources
+Supports Strands agent-sop framework with markdown-based SOPs
 """
 
 import json
 import yaml
-import os
+import re
 from pathlib import Path
 from typing import List, Dict, Optional
 from .sop_models import SOP, SOPStep, SOPMetadata, SOPRepository
@@ -18,7 +19,8 @@ class SOPLoader:
     
     def load_from_directory(self, directory_path: str, repository_name: str = "local") -> SOPRepository:
         """
-        Load all SOPs from a directory (JSON and YAML files)
+        Load all SOPs from a directory (JSON, YAML, and Markdown files)
+        Supports both traditional JSON/YAML format and Strands agent-sop markdown format
         
         Args:
             directory_path: Path to directory containing SOP files
@@ -39,21 +41,21 @@ class SOPLoader:
             source_url=str(path.absolute())
         )
         
-        # Load JSON files
+        # Load JSON files (traditional format)
         for json_file in path.glob("*.json"):
             try:
                 sop = self._load_sop_from_json(json_file)
                 repository.add_sop(sop)
-                print(f"✓ Loaded SOP: {sop.id} from {json_file.name}")
+                print(f"✓ Loaded SOP: {sop.id} from {json_file.name} (JSON format)")
             except Exception as e:
                 print(f"✗ Error loading {json_file.name}: {e}")
         
-        # Load YAML files
+        # Load YAML files (traditional format)
         for yaml_file in path.glob("*.yaml"):
             try:
                 sop = self._load_sop_from_yaml(yaml_file)
                 repository.add_sop(sop)
-                print(f"✓ Loaded SOP: {sop.id} from {yaml_file.name}")
+                print(f"✓ Loaded SOP: {sop.id} from {yaml_file.name} (YAML format)")
             except Exception as e:
                 print(f"✗ Error loading {yaml_file.name}: {e}")
         
@@ -61,9 +63,18 @@ class SOPLoader:
             try:
                 sop = self._load_sop_from_yaml(yml_file)
                 repository.add_sop(sop)
-                print(f"✓ Loaded SOP: {sop.id} from {yml_file.name}")
+                print(f"✓ Loaded SOP: {sop.id} from {yml_file.name} (YAML format)")
             except Exception as e:
                 print(f"✗ Error loading {yml_file.name}: {e}")
+        
+        # Load Markdown files (Strands agent-sop format)
+        for md_file in path.glob("*.md"):
+            try:
+                sop = self._load_sop_from_markdown(md_file)
+                repository.add_sop(sop)
+                print(f"✓ Loaded SOP: {sop.id} from {md_file.name} (Markdown agent-sop format)")
+            except Exception as e:
+                print(f"✗ Error loading {md_file.name}: {e}")
         
         self.repositories[repository_name] = repository
         return repository
@@ -82,8 +93,215 @@ class SOPLoader:
         
         return self._parse_sop_data(data)
     
+    def _load_sop_from_markdown(self, file_path: Path) -> SOP:
+        """
+        Load an SOP from a Markdown file using Strands agent-sop format
+        
+        This method parses markdown-based SOPs that use RFC 2119 keywords
+        (MUST, SHOULD, MAY, etc.) for defining workflow requirements.
+        
+        Args:
+            file_path: Path to markdown SOP file
+            
+        Returns:
+            Parsed SOP object
+        """
+        with open(file_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        # Extract metadata from front matter (between **key:** value pairs)
+        metadata_pattern = r'\*\*([^*]+):\*\*\s*(.+?)(?=\*\*|\n\n|$)'
+        metadata_matches = re.findall(metadata_pattern, content[:2000])  # Check first 2000 chars
+        
+        metadata_dict = {}
+        for key, value in metadata_matches:
+            metadata_dict[key.strip()] = value.strip()
+        
+        # Extract title (first # heading)
+        title_match = re.search(r'^#\s+(.+)$', content, re.MULTILINE)
+        title = title_match.group(1).strip() if title_match else file_path.stem
+        
+        # Parse metadata
+        sop_id = metadata_dict.get('SOP ID', file_path.stem.upper())
+        category = metadata_dict.get('Category', 'operational').lower()
+        priority = metadata_dict.get('Priority', 'medium').lower()
+        version = metadata_dict.get('Version', '1.0')
+        last_updated = metadata_dict.get('Last Updated', '')
+        
+        # Parse applicable departments and roles
+        applicable_departments = []
+        if 'Applicable Departments' in metadata_dict:
+            dept_str = metadata_dict['Applicable Departments']
+            applicable_departments = [d.strip() for d in dept_str.split(',')]
+        
+        applicable_roles = []
+        if 'Applicable Roles' in metadata_dict:
+            roles_str = metadata_dict['Applicable Roles']
+            applicable_roles = [r.strip() for r in roles_str.split(',')]
+        
+        # Extract overview/description
+        overview_match = re.search(r'##\s+Overview\s+(.+?)(?=##|\Z)', content, re.DOTALL)
+        description = overview_match.group(1).strip() if overview_match else title
+        # Limit description to first paragraph
+        description = description.split('\n\n')[0].strip()
+        
+        # Extract prerequisites
+        prerequisites = []
+        prereq_match = re.search(r'##\s+Prerequisites\s+(.+?)(?=##|\Z)', content, re.DOTALL)
+        if prereq_match:
+            prereq_content = prereq_match.group(1).strip()
+            prereq_lines = [line.strip('- ').strip() for line in prereq_content.split('\n') if line.strip().startswith('-')]
+            prerequisites = prereq_lines
+        
+        # Parse steps from markdown sections (### Step N: Title)
+        steps = []
+        step_pattern = r'###\s+Step\s+(\d+):\s+(.+?)\n\n\*\*Description:\*\*\s+(.+?)\n\n(.*?)(?=###\s+Step|\n##|\Z)'
+        step_matches = re.findall(step_pattern, content, re.DOTALL)
+        
+        for step_num, step_title, step_desc, step_body in step_matches:
+            step_number = int(step_num)
+            
+            # Parse the step body for RFC 2119 keywords and other information
+            # Extract the detailed instructions (paragraphs starting with You MUST/SHOULD/MAY)
+            details_lines = []
+            for line in step_body.split('\n'):
+                line = line.strip()
+                if line.startswith('You MUST') or line.startswith('You SHOULD') or line.startswith('You MAY'):
+                    details_lines.append(line)
+            details = ' '.join(details_lines) if details_lines else step_desc
+            
+            # Extract validation criteria
+            validation_criteria = []
+            validation_match = re.search(r'\*\*Validation Criteria:\*\*\s+(.+?)(?=\*\*|\n\n|---)', step_body, re.DOTALL)
+            if validation_match:
+                criteria_content = validation_match.group(1).strip()
+                validation_criteria = [line.strip('- ').strip() for line in criteria_content.split('\n') if line.strip().startswith('-')]
+            
+            # Extract warnings
+            warnings = []
+            warnings_match = re.search(r'\*\*Warnings:\*\*\s+(.+?)(?=\*\*|\n\n|---)', step_body, re.DOTALL)
+            if warnings_match:
+                warnings_content = warnings_match.group(1).strip()
+                warnings = [line.strip('- ').strip() for line in warnings_content.split('\n') if line.strip().startswith('-')]
+            
+            # Extract estimated time
+            estimated_time = None
+            time_match = re.search(r'\*\*Estimated Time:\*\*\s+(.+?)(?=\n|$)', step_body)
+            if time_match:
+                estimated_time = time_match.group(1).strip()
+            
+            step = SOPStep(
+                step_number=step_number,
+                description=step_title,
+                details=details,
+                required=True,  # Default to required; could parse from MUST vs SHOULD
+                validation_criteria=validation_criteria if validation_criteria else None,
+                estimated_time=estimated_time,
+                warnings=warnings if warnings else None
+            )
+            steps.append(step)
+        
+        if not steps:
+            raise ValueError(f"No steps found in markdown SOP: {file_path}")
+        
+        # Extract keywords from title, description, and content
+        keywords = []
+        # Add words from title
+        keywords.extend([word.lower() for word in re.findall(r'\b\w+\b', title) if len(word) > 3])
+        # Add departments and roles as keywords
+        keywords.extend([d.lower() for d in applicable_departments])
+        keywords.extend([r.lower() for r in applicable_roles])
+        # Deduplicate
+        keywords = list(set(keywords))
+        
+        # Extract related SOPs
+        related_sops = []
+        related_match = re.search(r'##\s+Related SOPs\s+(.+?)(?=##|\Z)', content, re.DOTALL)
+        if related_match:
+            related_content = related_match.group(1).strip()
+            related_lines = re.findall(r'-\s+.*?\(([^)]+)\)', related_content)
+            related_sops = related_lines
+        
+        # Extract references
+        references = []
+        ref_match = re.search(r'##\s+References\s+(.+?)(?=##|\Z)', content, re.DOTALL)
+        if ref_match:
+            ref_content = ref_match.group(1).strip()
+            ref_lines = [line.strip('- ').strip() for line in ref_content.split('\n') if line.strip().startswith('-')]
+            references = ref_lines
+        
+        # Parse additional metadata
+        author = metadata_dict.get('Author', 'Unknown')
+        reviewer = metadata_dict.get('Reviewer', None)
+        approval_status = metadata_dict.get('Approval Status', 'draft')
+        review_frequency = metadata_dict.get('Review Frequency', None)
+        
+        # Extract from approval section if present
+        approval_match = re.search(r'##\s+Approval\s+(.+?)(?=##|\Z)', content, re.DOTALL)
+        if approval_match:
+            approval_content = approval_match.group(1)
+            author_match = re.search(r'\*\*Author:\*\*\s*(.+?)(?=\n|$)', approval_content)
+            if author_match:
+                author = author_match.group(1).strip()
+            reviewer_match = re.search(r'\*\*Reviewer:\*\*\s*(.+?)(?=\n|$)', approval_content)
+            if reviewer_match:
+                reviewer = reviewer_match.group(1).strip()
+            approval_match_status = re.search(r'\*\*Approval Status:\*\*\s*(.+?)(?=\n|$)', approval_content)
+            if approval_match_status:
+                approval_status = approval_match_status.group(1).strip().lower()
+            review_freq_match = re.search(r'\*\*Review Frequency:\*\*\s*(.+?)(?=\n|$)', approval_content)
+            if review_freq_match:
+                review_frequency = review_freq_match.group(1).strip()
+        
+        # Create metadata object
+        metadata = SOPMetadata(
+            version=version,
+            created_date=last_updated,  # Use last_updated as created_date if not specified
+            last_updated=last_updated,
+            author=author,
+            reviewer=reviewer,
+            approval_status=approval_status,
+            review_frequency=review_frequency
+        )
+        
+        # Create SOP object
+        sop = SOP(
+            id=sop_id,
+            title=title,
+            description=description,
+            category=category,
+            priority=priority,
+            steps=steps,
+            metadata=metadata,
+            applicable_departments=applicable_departments,
+            applicable_roles=applicable_roles,
+            keywords=keywords,
+            prerequisites=prerequisites if prerequisites else None,
+            related_sops=related_sops if related_sops else None,
+            references=references if references else None
+        )
+        
+        return sop
+    
     def _parse_sop_data(self, data: Dict) -> SOP:
-        """Parse SOP data from dictionary"""
+        """
+        Parse SOP data from dictionary with validation
+        
+        Args:
+            data: Dictionary containing SOP data
+            
+        Returns:
+            Validated SOP object
+            
+        Raises:
+            ValueError: If required fields are missing or invalid
+        """
+        # Validate required fields
+        required_fields = ['id', 'title', 'description', 'category', 'priority', 'steps', 'metadata']
+        missing_fields = [field for field in required_fields if field not in data]
+        if missing_fields:
+            raise ValueError(f"Missing required fields: {', '.join(missing_fields)}")
+        
         # Parse steps
         steps = []
         for step_data in data.get('steps', []):
@@ -97,6 +315,9 @@ class SOPLoader:
                 warnings=step_data.get('warnings')
             )
             steps.append(step)
+        
+        if not steps:
+            raise ValueError(f"SOP must have at least one step")
         
         # Parse metadata
         metadata_data = data.get('metadata', {})

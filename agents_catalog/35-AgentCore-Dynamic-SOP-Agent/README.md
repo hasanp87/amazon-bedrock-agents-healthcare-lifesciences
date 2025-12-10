@@ -1,6 +1,8 @@
 # AgentCore Dynamic SOP Agent
 
-A context-aware Standard Operating Procedure (SOP) assistant built with the Strands Agents framework and integrated with Amazon Bedrock AgentCore for enterprise deployment. This agent dynamically loads and applies SOPs based on user context and queries.
+A context-aware Standard Operating Procedure (SOP) assistant built with the **Strands agent-sop framework** and integrated with Amazon Bedrock AgentCore for enterprise deployment. This agent uses markdown-based SOPs with RFC 2119 keywords (MUST, SHOULD, MAY) to dynamically load and apply procedures based on user context and queries.
+
+> **🆕 NEW**: Now integrates with the Strands agent-sop framework! See [STRANDS_AGENT_SOP_INTEGRATION.md](./STRANDS_AGENT_SOP_INTEGRATION.md) for details.
 
 ## Overview
 

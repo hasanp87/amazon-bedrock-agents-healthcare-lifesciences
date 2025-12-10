@@ -37,8 +37,14 @@ def search_sops_by_context(query: str) -> str:
     if not sop_loader or not context_analyzer:
         return "Error: SOP tools not initialized"
     
-    # Analyze the query to extract context
-    context = context_analyzer.analyze(query)
+    if not query or not query.strip():
+        return "Error: Query cannot be empty. Please provide a description of what you need help with."
+    
+    try:
+        # Analyze the query to extract context
+        context = context_analyzer.analyze(query)
+    except ValueError as e:
+        return f"Error analyzing query: {str(e)}"
     
     # Get context summary
     context_summary = context_analyzer.get_context_summary(context)
@@ -88,7 +94,10 @@ def get_sop_by_id(sop_id: str) -> str:
     if not sop_loader:
         return "Error: SOP tools not initialized"
     
-    sop = sop_loader.get_sop_by_id(sop_id)
+    if not sop_id or not sop_id.strip():
+        return "Error: SOP ID cannot be empty. Please provide a valid SOP ID (e.g., 'SOP-CARD-001')"
+    
+    sop = sop_loader.get_sop_by_id(sop_id.strip())
     
     if not sop:
         return f"❌ SOP '{sop_id}' not found. Use search_sops_by_context to find available SOPs."
@@ -140,7 +149,10 @@ def start_sop_execution(sop_id: str) -> str:
     if not sop_loader:
         return "Error: SOP tools not initialized"
     
-    sop = sop_loader.get_sop_by_id(sop_id)
+    if not sop_id or not sop_id.strip():
+        return "Error: SOP ID cannot be empty. Please provide a valid SOP ID to start."
+    
+    sop = sop_loader.get_sop_by_id(sop_id.strip())
     
     if not sop:
         return f"❌ SOP '{sop_id}' not found."

@@ -1,5 +1,6 @@
 strands-agents
 strands-agents-tools
+strands-agents-sops
 requests
 PyYAML
 fastmcp

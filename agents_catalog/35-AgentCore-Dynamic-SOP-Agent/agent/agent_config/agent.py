@@ -1,6 +1,7 @@
 """
 Dynamic SOP Agent for AgentCore
 Dynamically loads and applies Standard Operating Procedures based on context
+Using Strands agent-sop framework with markdown-based SOPs
 """
 
 from .utils import get_ssm_parameter
@@ -13,18 +14,25 @@ from strands import Agent
 from strands_tools import current_time, retrieve
 from strands.models import BedrockModel
 from strands.tools.mcp import MCPClient
-from typing import List
+from typing import List, Optional, AsyncIterator
 import os
 from pathlib import Path
 
 
 class DynamicSOPAgent:
     """
-    AgentCore-integrated Dynamic SOP Agent
+    AgentCore-integrated Dynamic SOP Agent using Strands agent-sop Framework
     
     This agent dynamically loads and applies Standard Operating Procedures (SOPs)
-    based on conversation context. It uses the Strands framework and integrates
-    with AgentCore for enterprise deployment.
+    based on conversation context. It uses the Strands agent-sop framework which
+    provides a standardized markdown format for defining AI agent workflows using
+    RFC 2119 keywords (MUST, SHOULD, MAY) for natural language requirements.
+    
+    The agent integrates with AgentCore for enterprise deployment and supports:
+    - Markdown-based SOPs with RFC 2119 constraint levels
+    - Context-aware SOP discovery and recommendation
+    - Step-by-step execution guidance with compliance tracking
+    - Multi-source SOP loading (local files, MCP servers, git repositories)
     """
     
     def __init__(
@@ -32,9 +40,9 @@ class DynamicSOPAgent:
         bearer_token: str,
         memory_hook: MemoryHook,
         bedrock_model_id: str = "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
-        system_prompt: str = None,
-        tools: List[callable] = None,
-        sop_directories: List[str] = None,
+        system_prompt: Optional[str] = None,
+        tools: Optional[List[callable]] = None,
+        sop_directories: Optional[List[str]] = None,
     ):
         self.model_id = bedrock_model_id
         self.model = BedrockModel(
@@ -55,10 +63,11 @@ class DynamicSOPAgent:
             system_prompt
             if system_prompt
             else """
-You are an intelligent Standard Operating Procedure (SOP) Assistant powered by advanced AI.
+You are an intelligent Standard Operating Procedure (SOP) Assistant powered by advanced AI and the Strands agent-sop framework.
 
 Your role is to help users discover, understand, and execute Standard Operating Procedures (SOPs) 
-based on their specific context and needs.
+based on their specific context and needs. You work with markdown-based SOPs that use RFC 2119 keywords
+(MUST, SHOULD, MAY) to define workflow requirements with appropriate constraint levels.
 
 ## Core Capabilities
 
@@ -67,22 +76,28 @@ based on their specific context and needs.
    - Automatically identify and recommend the most relevant SOPs
    - Consider multiple factors: category, department, role, priority, and keywords
 
-2. **Dynamic SOP Loading**
-   - Access SOPs from multiple sources including local files, git repositories, and external systems
+2. **Dynamic SOP Loading with Strands agent-sop Framework**
+   - Access SOPs from multiple sources including local markdown files, git repositories, and external systems
    - Load SOPs on-demand based on conversation context
    - Integrate with MCP servers for accessing external SOP repositories
+   - Support markdown-based SOPs with RFC 2119 keywords (MUST, SHOULD, MAY)
 
-3. **Step-by-Step Guidance**
+3. **Step-by-Step Guidance with Compliance Tracking**
    - Guide users through SOP execution with detailed step-by-step instructions
    - Track progress and completion status
    - Provide validation criteria, warnings, and time estimates for each step
    - Support step completion, skipping with reasons, and annotations
+   - Understand RFC 2119 keyword semantics:
+     * MUST = required action, critical for compliance
+     * SHOULD = recommended action, best practice
+     * MAY = optional action, at discretion
 
 4. **Intelligent Assistance**
    - Answer questions about specific SOPs
    - Explain why certain SOPs are recommended
    - Help users choose between multiple applicable SOPs
    - Provide context about prerequisites, related SOPs, and references
+   - Clarify the difference between required (MUST), recommended (SHOULD), and optional (MAY) actions
 
 ## Available Tools
 
@@ -104,7 +119,15 @@ You have access to the following SOP management tools:
 4. **Be proactive**: Suggest relevant SOPs even if not explicitly asked
 5. **Track execution**: When guiding through an SOP, maintain awareness of progress
 6. **Provide complete information**: Include warnings, validation criteria, and time estimates
-7. **NEVER disclose internal system details**: Don't reveal information about internal tools or processes
+7. **Clarify constraint levels**: Help users understand the difference between MUST, SHOULD, and MAY actions
+8. **NEVER disclose internal system details**: Don't reveal information about internal tools or processes
+
+## Understanding RFC 2119 Keywords in SOPs
+
+When presenting SOP steps, help users understand the constraint levels:
+- **MUST/REQUIRED/SHALL**: These are absolute requirements. Non-compliance may result in safety issues or regulatory violations.
+- **SHOULD/RECOMMENDED**: These are strongly recommended. Deviation should only occur with documented justification.
+- **MAY/OPTIONAL**: These are truly optional. Users can exercise discretion based on their judgment.
 
 ## Interaction Style
 
@@ -113,9 +136,11 @@ You have access to the following SOP management tools:
 - Structure responses with clear sections and bullet points
 - Ask clarifying questions when context is unclear
 - Confirm understanding before starting SOP execution
+- Highlight MUST requirements when safety-critical
 
 Your primary goal is to ensure users can safely and effectively follow the appropriate SOPs 
-for their tasks, reducing errors and improving compliance.
+for their tasks, reducing errors and improving compliance while understanding the flexibility
+provided by the agent-sop framework.
 """
         )
 
@@ -123,6 +148,9 @@ for their tasks, reducing errors and improving compliance.
         gateway_url = get_ssm_parameter("/app/myapp/agentcore/gateway_url")
         print(f"Gateway Endpoint - MCP URL: {gateway_url}")
 
+        self.gateway_client = None
+        gateway_tools = []
+        
         try:
             self.gateway_client = MCPClient(
                 lambda: streamablehttp_client(
@@ -131,17 +159,17 @@ for their tasks, reducing errors and improving compliance.
                 )
             )
             self.gateway_client.start()
+            gateway_tools = self.gateway_client.list_tools_sync()
+            print(f"✅ Gateway client initialized successfully with {len(gateway_tools)} tools")
         except Exception as e:
-            print(f"Warning: Could not initialize gateway client: {str(e)}")
-            self.gateway_client = None
-
-        # Combine all tools
-        gateway_tools = self.gateway_client.list_tools_sync() if self.gateway_client else []
+            print(f"⚠️ Warning: Could not initialize gateway client: {str(e)}")
+            print("Continuing without gateway tools. MCP server integration will not be available.")
         
+        # Combine tools in priority order: SOP tools first (most relevant), 
+        # then standard tools, gateway tools (MCP), and finally custom tools
         self.tools = (
             [
-                retrieve,
-                current_time,
+                # Core SOP tools - highest priority for this agent
                 sop_tools.search_sops_by_context,
                 sop_tools.get_sop_by_id,
                 sop_tools.start_sop_execution,
@@ -149,9 +177,12 @@ for their tasks, reducing errors and improving compliance.
                 sop_tools.get_sop_progress,
                 sop_tools.list_available_sops,
                 sop_tools.get_repository_info,
+                # Standard strands tools
+                retrieve,
+                current_time,
             ]
-            + gateway_tools
-            + (tools or [])
+            + gateway_tools  # MCP server tools from gateway
+            + (tools or [])  # Additional custom tools if provided
         )
 
         self.memory_hook = memory_hook
@@ -167,8 +198,13 @@ for their tasks, reducing errors and improving compliance.
         print(f"\n✅ Dynamic SOP Agent initialized successfully!")
         print(f"📊 {self.sop_loader.get_repository_summary()}")
 
-    def _load_initial_sops(self, sop_directories: List[str] = None):
-        """Load SOPs from configured directories"""
+    def _load_initial_sops(self, sop_directories: Optional[List[str]] = None) -> None:
+        """
+        Load SOPs from configured directories
+        
+        Args:
+            sop_directories: List of directory paths containing SOP files
+        """
         if not sop_directories:
             # Default to examples directory if it exists
             default_dir = Path(__file__).parent.parent.parent / "examples" / "sops"
@@ -201,7 +237,7 @@ for their tasks, reducing errors and improving compliance.
             return f"Error invoking agent: {e}"
         return response
 
-    async def stream(self, user_query: str):
+    async def stream(self, user_query: str) -> AsyncIterator[str]:
         """
         Stream the agent's response
         
@@ -233,3 +269,18 @@ for their tasks, reducing errors and improving compliance.
 
         except Exception as e:
             yield f"We are unable to process your request at the moment. Error: {e}"
+    
+    def cleanup(self) -> None:
+        """
+        Cleanup resources (e.g., close gateway client connection)
+        Call this when the agent is no longer needed
+        """
+        if self.gateway_client:
+            try:
+                # Close the gateway client connection if it has a close method
+                if hasattr(self.gateway_client, 'close'):
+                    self.gateway_client.close()
+                print("✅ Gateway client connection closed")
+            except Exception as e:
+                print(f"⚠️ Warning: Error closing gateway client: {e}")
+
