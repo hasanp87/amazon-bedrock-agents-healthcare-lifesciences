@@ -1,12 +1,24 @@
 """
 Data models for Standard Operating Procedures (SOPs)
 Integrated with AgentCore and Strands framework
+Uses strands-agents-sops library classes
 """
 
 from dataclasses import dataclass, field, asdict
 from typing import List, Dict, Optional, Any
 from datetime import datetime
 from enum import Enum
+
+# Import from strands-agents-sops library
+try:
+    from strands_sops import SOP as LibrarySOP
+    from strands_sops import SOPStep as LibrarySOPStep
+    from strands_sops import SOPMetadata as LibrarySOPMetadata
+    LIBRARY_AVAILABLE = True
+except ImportError:
+    # Fallback for development/testing without library installed
+    LIBRARY_AVAILABLE = False
+    print("⚠️ Warning: strands_sops library not available, using compatibility layer")
 
 
 class SOPCategory(str, Enum):
@@ -28,34 +40,81 @@ class SOPPriority(str, Enum):
     LOW = "low"
 
 
-@dataclass
-class SOPStep:
-    """Individual step within an SOP"""
-    step_number: int
-    description: str
-    details: Optional[str] = None
-    required: bool = True
-    validation_criteria: Optional[List[str]] = None
-    estimated_time: Optional[str] = None
-    warnings: Optional[List[str]] = None
+# If library is available, use library classes directly; otherwise provide compatibility layer
+if LIBRARY_AVAILABLE:
+    # Use library classes as base
+    SOPStep = LibrarySOPStep
+    SOPMetadata = LibrarySOPMetadata
     
-    def to_dict(self) -> Dict[str, Any]:
-        return asdict(self)
+    # Extend library SOP class if needed for backward compatibility
+    class SOP(LibrarySOP):
+        """Extended SOP class based on strands_sops.SOP"""
+        pass
+else:
+    # Compatibility layer when library is not available
+    @dataclass
+    class SOPStep:
+        """Individual step within an SOP - compatibility layer"""
+        step_number: int
+        description: str
+        details: Optional[str] = None
+        required: bool = True
+        validation_criteria: Optional[List[str]] = None
+        estimated_time: Optional[str] = None
+        warnings: Optional[List[str]] = None
+        
+        def to_dict(self) -> Dict[str, Any]:
+            return asdict(self)
 
 
-@dataclass
-class SOPMetadata:
-    """Metadata for an SOP"""
-    version: str
-    created_date: str
-    last_updated: str
-    author: str
-    reviewer: Optional[str] = None
-    approval_status: str = "draft"
-    review_frequency: Optional[str] = None
-    
-    def to_dict(self) -> Dict[str, Any]:
-        return asdict(self)
+    @dataclass
+    class SOPMetadata:
+        """Metadata for an SOP - compatibility layer"""
+        version: str
+        created_date: str
+        last_updated: str
+        author: str
+        reviewer: Optional[str] = None
+        approval_status: str = "draft"
+        review_frequency: Optional[str] = None
+        
+        def to_dict(self) -> Dict[str, Any]:
+            return asdict(self)
+
+
+    @dataclass
+    class SOP:
+        """Standard Operating Procedure - compatibility layer"""
+        id: str
+        title: str
+        description: str
+        category: str
+        priority: str
+        steps: List['SOPStep']
+        metadata: 'SOPMetadata'
+        applicable_departments: List[str] = field(default_factory=list)
+        applicable_roles: List[str] = field(default_factory=list)
+        keywords: List[str] = field(default_factory=list)
+        prerequisites: Optional[List[str]] = None
+        related_sops: Optional[List[str]] = None
+        references: Optional[List[str]] = None
+        
+        def to_dict(self) -> Dict[str, Any]:
+            data = asdict(self)
+            data['steps'] = [step.to_dict() if hasattr(step, 'to_dict') else asdict(step) for step in self.steps]
+            data['metadata'] = self.metadata.to_dict() if hasattr(self.metadata, 'to_dict') else asdict(self.metadata)
+            return data
+        
+        def get_step(self, step_number: int) -> Optional['SOPStep']:
+            """Retrieve a specific step by number"""
+            for step in self.steps:
+                if step.step_number == step_number:
+                    return step
+            return None
+        
+        def get_summary(self) -> str:
+            """Get a brief summary of the SOP"""
+            return f"SOP {self.id}: {self.title} ({len(self.steps)} steps, {self.priority} priority)"
 
 
 @dataclass
@@ -98,41 +157,6 @@ class SOPContext:
         score += keyword_matches * 2.0
         
         return score
-
-
-@dataclass
-class SOP:
-    """Standard Operating Procedure"""
-    id: str
-    title: str
-    description: str
-    category: str
-    priority: str
-    steps: List[SOPStep]
-    metadata: SOPMetadata
-    applicable_departments: List[str] = field(default_factory=list)
-    applicable_roles: List[str] = field(default_factory=list)
-    keywords: List[str] = field(default_factory=list)
-    prerequisites: Optional[List[str]] = None
-    related_sops: Optional[List[str]] = None
-    references: Optional[List[str]] = None
-    
-    def to_dict(self) -> Dict[str, Any]:
-        data = asdict(self)
-        data['steps'] = [step.to_dict() for step in self.steps]
-        data['metadata'] = self.metadata.to_dict()
-        return data
-    
-    def get_step(self, step_number: int) -> Optional[SOPStep]:
-        """Retrieve a specific step by number"""
-        for step in self.steps:
-            if step.step_number == step_number:
-                return step
-        return None
-    
-    def get_summary(self) -> str:
-        """Get a brief summary of the SOP"""
-        return f"SOP {self.id}: {self.title} ({len(self.steps)} steps, {self.priority} priority)"
 
 
 @dataclass

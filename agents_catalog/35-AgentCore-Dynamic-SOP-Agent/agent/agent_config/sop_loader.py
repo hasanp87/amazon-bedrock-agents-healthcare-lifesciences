@@ -1,6 +1,6 @@
 """
 SOP Loader for loading SOPs from various sources
-Supports Strands agent-sop framework with markdown-based SOPs
+Uses strands-agents-sops library for markdown-based SOP loading
 """
 
 import json
@@ -10,17 +10,35 @@ from pathlib import Path
 from typing import List, Dict, Optional
 from .sop_models import SOP, SOPStep, SOPMetadata, SOPRepository
 
+# Import from strands-agents-sops library
+try:
+    from strands_sops import load_sop_from_file, load_sops_from_directory
+    from strands_sops import parse_sop_markdown
+    LIBRARY_AVAILABLE = True
+    print("✅ Using strands_sops library for SOP loading")
+except ImportError:
+    LIBRARY_AVAILABLE = False
+    print("⚠️ Warning: strands_sops library not available, using fallback implementation")
+
 
 class SOPLoader:
-    """Loads SOPs from various sources"""
+    """
+    Loads SOPs from various sources using strands-agents-sops library
+    
+    This loader prioritizes using the strands-agents-sops library functions
+    for loading markdown-based SOPs with RFC 2119 keywords. It also maintains
+    backward compatibility with legacy JSON/YAML formats.
+    """
     
     def __init__(self):
         self.repositories: Dict[str, SOPRepository] = {}
     
     def load_from_directory(self, directory_path: str, repository_name: str = "local") -> SOPRepository:
         """
-        Load all SOPs from a directory (JSON, YAML, and Markdown files)
-        Supports both traditional JSON/YAML format and Strands agent-sop markdown format
+        Load all SOPs from a directory using strands-agents-sops library
+        
+        This method uses the library's built-in directory loading functionality
+        for markdown files, while maintaining support for legacy JSON/YAML formats.
         
         Args:
             directory_path: Path to directory containing SOP files
@@ -41,7 +59,24 @@ class SOPLoader:
             source_url=str(path.absolute())
         )
         
-        # Load JSON files (traditional format)
+        # Use library function for markdown SOPs if available
+        if LIBRARY_AVAILABLE:
+            try:
+                # Load all markdown SOPs using library function
+                library_sops = load_sops_from_directory(str(path))
+                for lib_sop in library_sops:
+                    # Convert library SOP to our SOP model if needed
+                    sop = self._convert_library_sop(lib_sop)
+                    repository.add_sop(sop)
+                    print(f"✓ Loaded SOP: {sop.id} from markdown (using strands_sops library)")
+            except Exception as e:
+                print(f"⚠️ Library loading failed, falling back to custom parser: {e}")
+                self._load_markdown_files_fallback(path, repository)
+        else:
+            # Fallback to custom markdown parsing
+            self._load_markdown_files_fallback(path, repository)
+        
+        # Load legacy JSON files
         for json_file in path.glob("*.json"):
             try:
                 sop = self._load_sop_from_json(json_file)
@@ -50,8 +85,8 @@ class SOPLoader:
             except Exception as e:
                 print(f"✗ Error loading {json_file.name}: {e}")
         
-        # Load YAML files (traditional format)
-        for yaml_file in path.glob("*.yaml"):
+        # Load legacy YAML files
+        for yaml_file in list(path.glob("*.yaml")) + list(path.glob("*.yml")):
             try:
                 sop = self._load_sop_from_yaml(yaml_file)
                 repository.add_sop(sop)
@@ -59,25 +94,129 @@ class SOPLoader:
             except Exception as e:
                 print(f"✗ Error loading {yaml_file.name}: {e}")
         
-        for yml_file in path.glob("*.yml"):
-            try:
-                sop = self._load_sop_from_yaml(yml_file)
-                repository.add_sop(sop)
-                print(f"✓ Loaded SOP: {sop.id} from {yml_file.name} (YAML format)")
-            except Exception as e:
-                print(f"✗ Error loading {yml_file.name}: {e}")
-        
-        # Load Markdown files (Strands agent-sop format)
-        for md_file in path.glob("*.md"):
-            try:
-                sop = self._load_sop_from_markdown(md_file)
-                repository.add_sop(sop)
-                print(f"✓ Loaded SOP: {sop.id} from {md_file.name} (Markdown agent-sop format)")
-            except Exception as e:
-                print(f"✗ Error loading {md_file.name}: {e}")
-        
         self.repositories[repository_name] = repository
         return repository
+    
+    def load_sop_from_file(self, file_path: str) -> SOP:
+        """
+        Load a single SOP from a file using strands-agents-sops library
+        
+        This method uses the library's built-in file loading functionality.
+        
+        Args:
+            file_path: Path to SOP file (markdown, JSON, or YAML)
+            
+        Returns:
+            Loaded SOP object
+        """
+        path = Path(file_path)
+        
+        if not path.exists():
+            raise ValueError(f"File not found: {file_path}")
+        
+        # Use library function for markdown files
+        if path.suffix == '.md' and LIBRARY_AVAILABLE:
+            try:
+                lib_sop = load_sop_from_file(str(path))
+                return self._convert_library_sop(lib_sop)
+            except Exception as e:
+                print(f"⚠️ Library loading failed for {file_path}, using fallback: {e}")
+                return self._load_sop_from_markdown_fallback(path)
+        elif path.suffix == '.md':
+            return self._load_sop_from_markdown_fallback(path)
+        elif path.suffix == '.json':
+            return self._load_sop_from_json(path)
+        elif path.suffix in ['.yaml', '.yml']:
+            return self._load_sop_from_yaml(path)
+        else:
+            raise ValueError(f"Unsupported file format: {path.suffix}")
+    
+    def _convert_library_sop(self, lib_sop) -> SOP:
+        """
+        Convert a library SOP object to our SOP model
+        
+        Args:
+            lib_sop: SOP object from strands_sops library
+            
+        Returns:
+            Our SOP model instance
+        """
+        # If library SOP is already compatible, return as-is
+        if isinstance(lib_sop, SOP):
+            return lib_sop
+        
+        # Otherwise, convert library SOP attributes to our model
+        # This handles cases where library SOP structure differs slightly
+        steps = []
+        if hasattr(lib_sop, 'steps'):
+            for lib_step in lib_sop.steps:
+                if not isinstance(lib_step, SOPStep):
+                    # Convert library step to our SOPStep
+                    step = SOPStep(
+                        step_number=getattr(lib_step, 'step_number', getattr(lib_step, 'number', 0)),
+                        description=getattr(lib_step, 'description', getattr(lib_step, 'title', '')),
+                        details=getattr(lib_step, 'details', getattr(lib_step, 'content', None)),
+                        required=getattr(lib_step, 'required', True),
+                        validation_criteria=getattr(lib_step, 'validation_criteria', None),
+                        estimated_time=getattr(lib_step, 'estimated_time', None),
+                        warnings=getattr(lib_step, 'warnings', None)
+                    )
+                    steps.append(step)
+                else:
+                    steps.append(lib_step)
+        
+        # Convert metadata
+        metadata = None
+        if hasattr(lib_sop, 'metadata'):
+            lib_meta = lib_sop.metadata
+            if not isinstance(lib_meta, SOPMetadata):
+                metadata = SOPMetadata(
+                    version=getattr(lib_meta, 'version', '1.0'),
+                    created_date=getattr(lib_meta, 'created_date', ''),
+                    last_updated=getattr(lib_meta, 'last_updated', ''),
+                    author=getattr(lib_meta, 'author', ''),
+                    reviewer=getattr(lib_meta, 'reviewer', None),
+                    approval_status=getattr(lib_meta, 'approval_status', 'draft'),
+                    review_frequency=getattr(lib_meta, 'review_frequency', None)
+                )
+            else:
+                metadata = lib_meta
+        else:
+            metadata = SOPMetadata(
+                version='1.0',
+                created_date='',
+                last_updated='',
+                author=''
+            )
+        
+        # Create our SOP instance
+        sop = SOP(
+            id=getattr(lib_sop, 'id', getattr(lib_sop, 'sop_id', 'UNKNOWN')),
+            title=getattr(lib_sop, 'title', ''),
+            description=getattr(lib_sop, 'description', ''),
+            category=getattr(lib_sop, 'category', 'operational'),
+            priority=getattr(lib_sop, 'priority', 'medium'),
+            steps=steps,
+            metadata=metadata,
+            applicable_departments=getattr(lib_sop, 'applicable_departments', []),
+            applicable_roles=getattr(lib_sop, 'applicable_roles', []),
+            keywords=getattr(lib_sop, 'keywords', []),
+            prerequisites=getattr(lib_sop, 'prerequisites', None),
+            related_sops=getattr(lib_sop, 'related_sops', None),
+            references=getattr(lib_sop, 'references', None)
+        )
+        
+        return sop
+    
+    def _load_markdown_files_fallback(self, path: Path, repository: SOPRepository):
+        """Fallback method to load markdown files when library is not available"""
+        for md_file in path.glob("*.md"):
+            try:
+                sop = self._load_sop_from_markdown_fallback(md_file)
+                repository.add_sop(sop)
+                print(f"✓ Loaded SOP: {sop.id} from {md_file.name} (fallback markdown parser)")
+            except Exception as e:
+                print(f"✗ Error loading {md_file.name}: {e}")
     
     def _load_sop_from_json(self, file_path: Path) -> SOP:
         """Load an SOP from a JSON file"""
@@ -93,9 +232,9 @@ class SOPLoader:
         
         return self._parse_sop_data(data)
     
-    def _load_sop_from_markdown(self, file_path: Path) -> SOP:
+    def _load_sop_from_markdown_fallback(self, file_path: Path) -> SOP:
         """
-        Load an SOP from a Markdown file using Strands agent-sop format
+        Fallback method to load an SOP from a Markdown file when library is unavailable
         
         This method parses markdown-based SOPs that use RFC 2119 keywords
         (MUST, SHOULD, MAY, etc.) for defining workflow requirements.
