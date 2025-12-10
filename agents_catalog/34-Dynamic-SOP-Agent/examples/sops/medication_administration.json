@@ -1,0 +1,183 @@
+{
+  "id": "SOP-PHARM-001",
+  "title": "Safe Medication Administration Protocol",
+  "description": "Standard procedure for safe administration of medications following the 5 Rights",
+  "category": "clinical",
+  "priority": "high",
+  "applicable_departments": ["pharmacy", "nursing", "all clinical areas"],
+  "applicable_roles": ["nurse", "pharmacist", "physician"],
+  "keywords": ["medication", "administration", "safety", "drug", "prescription", "pharmacy"],
+  "prerequisites": [
+    "Valid medication order in system",
+    "Medication available in correct dose",
+    "Patient allergy check completed"
+  ],
+  "related_sops": ["SOP-PHARM-002", "SOP-SAFETY-001"],
+  "references": [
+    "Institute for Safe Medication Practices Guidelines",
+    "Hospital Medication Safety Policy"
+  ],
+  "steps": [
+    {
+      "step_number": 1,
+      "description": "Verify the RIGHT PATIENT",
+      "details": "Use two patient identifiers: full name and date of birth. Check patient wristband and ask patient to state their name.",
+      "required": true,
+      "validation_criteria": [
+        "Two identifiers verified",
+        "Wristband matches order",
+        "Patient confirms identity"
+      ],
+      "estimated_time": "2 minutes",
+      "warnings": [
+        "Never skip patient identification",
+        "Do not rely on room number alone"
+      ]
+    },
+    {
+      "step_number": 2,
+      "description": "Verify the RIGHT MEDICATION",
+      "details": "Compare medication label with order. Check medication name, ensuring it matches both generic and brand names if applicable.",
+      "required": true,
+      "validation_criteria": [
+        "Medication name matches order exactly",
+        "Medication retrieved from correct location",
+        "No expired medications"
+      ],
+      "estimated_time": "2 minutes",
+      "warnings": [
+        "Watch for look-alike/sound-alike medications",
+        "Check expiration date"
+      ]
+    },
+    {
+      "step_number": 3,
+      "description": "Verify the RIGHT DOSE",
+      "details": "Confirm dose matches order. If calculation required, have second nurse verify. Check unit of measurement.",
+      "required": true,
+      "validation_criteria": [
+        "Dose matches order exactly",
+        "Calculations double-checked if needed",
+        "Appropriate measuring device used"
+      ],
+      "estimated_time": "3 minutes",
+      "warnings": [
+        "High-alert medications require double-check",
+        "Verify decimal point placement"
+      ]
+    },
+    {
+      "step_number": 4,
+      "description": "Verify the RIGHT ROUTE",
+      "details": "Confirm route of administration matches order (PO, IV, IM, etc.). Ensure route is appropriate for medication and patient condition.",
+      "required": true,
+      "validation_criteria": [
+        "Route matches order",
+        "Patient able to receive via this route",
+        "Equipment available for route"
+      ],
+      "estimated_time": "1 minute",
+      "warnings": [
+        "Some medications cannot be given via certain routes",
+        "IV medications require patent IV access"
+      ]
+    },
+    {
+      "step_number": 5,
+      "description": "Verify the RIGHT TIME",
+      "details": "Administer medication within 30 minutes of scheduled time. Check for time-critical medications that require exact timing.",
+      "required": true,
+      "validation_criteria": [
+        "Within appropriate time window",
+        "Previous dose timing verified",
+        "No missed doses"
+      ],
+      "estimated_time": "1 minute",
+      "warnings": [
+        "Some medications are time-critical",
+        "Document if given outside time window"
+      ]
+    },
+    {
+      "step_number": 6,
+      "description": "Check allergies and contraindications",
+      "details": "Review patient allergy list in EHR. Ask patient about previous reactions. Check for drug interactions.",
+      "required": true,
+      "validation_criteria": [
+        "Allergy list reviewed",
+        "Patient questioned about reactions",
+        "No contraindications identified"
+      ],
+      "estimated_time": "2 minutes",
+      "warnings": [
+        "Do not administer if any concerns about allergy",
+        "Consult pharmacist if unsure about interaction"
+      ]
+    },
+    {
+      "step_number": 7,
+      "description": "Educate patient about medication",
+      "details": "Explain medication purpose, expected effects, and potential side effects. Answer patient questions.",
+      "required": true,
+      "validation_criteria": [
+        "Patient informed about medication",
+        "Questions answered",
+        "Patient consent obtained"
+      ],
+      "estimated_time": "3 minutes"
+    },
+    {
+      "step_number": 8,
+      "description": "Administer medication safely",
+      "details": "Use appropriate technique for route. Stay with patient during administration. Monitor for immediate reactions.",
+      "required": true,
+      "validation_criteria": [
+        "Proper technique used",
+        "Patient observed during administration",
+        "No immediate adverse reactions"
+      ],
+      "estimated_time": "5 minutes",
+      "warnings": [
+        "Never leave medication at bedside unsupervised",
+        "Watch for signs of adverse reaction"
+      ]
+    },
+    {
+      "step_number": 9,
+      "description": "Document administration immediately",
+      "details": "Document in EHR immediately after administration. Include time, dose, route, and site if applicable. Note any patient response or concerns.",
+      "required": true,
+      "validation_criteria": [
+        "Documentation completed within 5 minutes",
+        "All required fields completed",
+        "Any concerns documented"
+      ],
+      "estimated_time": "3 minutes",
+      "warnings": [
+        "Do not document before giving medication",
+        "Include all relevant information"
+      ]
+    },
+    {
+      "step_number": 10,
+      "description": "Monitor patient response",
+      "details": "Monitor patient for therapeutic effect and adverse reactions. Follow up according to medication guidelines.",
+      "required": true,
+      "validation_criteria": [
+        "Appropriate monitoring performed",
+        "Response documented",
+        "Physician notified of concerns"
+      ],
+      "estimated_time": "Variable"
+    }
+  ],
+  "metadata": {
+    "version": "2.5",
+    "created_date": "2023-03-10",
+    "last_updated": "2024-11-15",
+    "author": "Pharmacy Department",
+    "reviewer": "Patient Safety Committee",
+    "approval_status": "approved",
+    "review_frequency": "annual"
+  }
+}
